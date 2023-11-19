@@ -4,9 +4,12 @@ import argparse
 
 
 def fetch_webpage(url):
-    resp = requests.get(url)
-    return resp.text
-    
+    try:
+        resp = requests.get(url, timeout=7)
+        resp.raise_for_status()
+        return resp.text, True, f"HTTP {resp.status_code}"
+    except Exception as e:
+        return "", False, str(e)
 
 def extract_email(webpage):
     pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
@@ -25,7 +28,13 @@ def main():
         parser.print_help()
         return
 
-    webpage = fetch_webpage(args.url)
+    webpage, alive, status = fetch_webpage(args.url)
+    if not alive:
+        print(f"Error fetching webpage: {status}")
+        return
+
+    print(f"Website status: Alive {status}")
+
     emails = extract_email(webpage)
     
     print(f"Total emails found: {len(emails)}")
