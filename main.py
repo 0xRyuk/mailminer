@@ -14,13 +14,17 @@ def fetch_webpage(url):
 def extract_email(webpage):
     pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
     matches = pattern.findall(webpage)
-    return list(set(matches))
+    return [email for email in set(matches) if not email.endswith(("png", "webp", "webm", "jpg", "jpeg", "mp"))]
 
+def save(emails, filename):
+    with open(filename, "w+") as f:
+        for email in emails:
+            f.write(email + "\n")
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--url", metavar="", dest="url", help="Enter website url")
-
+    parser.add_argument("-o", "--out", metavar="", dest="output_file", help="Enter savefile name")
 
     args = parser.parse_args()
 
@@ -40,7 +44,12 @@ def main():
     print(f"Total emails found: {len(emails)}")
     for email in emails:
         print(email)
- 
+
+    if args.output_file:
+        if not args.output_file.endswith(".txt"):
+            args.output_file = args.output_file + ".txt"
+        print(f"Saving emails to {args.output_file}")
+        save(emails, args.output_file)
 
 if __name__ == "__main__":
     print("MailMiner - Email Extractor v0.1.0")
